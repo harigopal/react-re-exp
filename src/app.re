@@ -1,21 +1,50 @@
 type todoItem = {
+  id: int,
   title: string,
   completed: bool
 };
 
+let str = ReasonReact.stringToElement;
+
+module TodoItem = {
+  let component = ReasonReact.statelessComponent("TodoItem");
+  let make = (~item, _children) => {
+    ...component,
+    render: _self =>
+      <div>
+        <input
+          _type="checkbox"
+          checked=(Js.Boolean.to_js_boolean(item.completed))
+        />
+        (str(item.title))
+      </div>
+  };
+};
+
 type state = {items: list(todoItem)};
+
+type action =
+  | AddItem;
 
 let component = ReasonReact.reducerComponent("App");
 
-let str = ReasonReact.stringToElement;
+let lastId = ref(0);
+
+let newItem = () => {
+  lastId := lastId^ + 1;
+  {id: lastId^, title: "Do something!", completed: false};
+};
 
 let make = _children => {
   ...component,
   initialState: () => {
-    items: [{title: "Initial uncompleted item.", completed: false}]
+    items: [{id: 0, title: "Initial incomplete item.", completed: false}]
   },
-  reducer: ((), _) => ReasonReact.NoUpdate,
-  render: ({state: {items}}) => {
+  reducer: (action, {items}) =>
+    switch action {
+    | AddItem => ReasonReact.Update({items: [newItem(), ...items]})
+    },
+  render: ({state: {items}, reduce}) => {
     let lengthMessage = itemCount =>
       switch itemCount {
       | 0 => "There are no items in the list. Add some?"
@@ -28,6 +57,22 @@ let make = _children => {
     <div>
       <p> (str("This is the App component.")) </p>
       <p> (str(lengthMessage(List.length(items)))) </p>
+      <button onClick=(reduce(_event => AddItem))>
+        (str("Add an item"))
+      </button>
+      <h2> (str("Current Items")) </h2>
+      <div>
+        (
+          ReasonReact.arrayToElement(
+            Array.of_list(
+              List.map(
+                item => <TodoItem item key=(string_of_int(item.id)) />,
+                items
+              )
+            )
+          )
+        )
+      </div>
     </div>;
   }
 };
