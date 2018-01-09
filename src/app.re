@@ -6,10 +6,7 @@ type todoItem = {
 
 let str = ReasonReact.stringToElement;
 
-[@bs.val]
-external getElementById : string => Dom.element = "document.getElementById";
-
-type action =
+type appAction =
   | AddItem(string)
   | ToggleItem(int);
 
@@ -25,6 +22,40 @@ module TodoItem = {
         />
         (str(item.title))
       </div>
+  };
+};
+
+let valueFromInputEvent = event : string => (
+                                              event
+                                              |> ReactEventRe.Form.target
+                                              |> ReactDOMRe.domElementToObj
+                                            )##value;
+
+type todoFormState = {title: string};
+
+module TodoForm = {
+  let component = ReasonReact.reducerComponent("TodoForm");
+  let make = (~appReduce, _children) => {
+    ...component,
+    initialState: () => {title: ""},
+    reducer: (title, _state) => ReasonReact.Update({title: title}),
+    render: ({state: {title}, reduce}) =>
+      <form
+        onSubmit=(
+          event => {
+            ReactEventRe.Synthetic.preventDefault(event);
+            (appReduce(() => AddItem(title)))();
+            (reduce(() => ""))();
+          }
+        )>
+        <input
+          _type="text"
+          id="todo-text-input"
+          onChange=(reduce(event => valueFromInputEvent(event)))
+          value=title
+        />
+        <button _type="submit"> (str("Add an item")) </button>
+      </form>
   };
 };
 
@@ -69,19 +100,7 @@ let make = _children => {
     <div>
       <p> (str("This is the App component.")) </p>
       <p> (str(lengthMessage(List.length(items)))) </p>
-      <form
-        onSubmit=(
-          reduce(event => {
-            ReactEventRe.Synthetic.preventDefault(event);
-            let title = ReactDOMRe.domElementToObj(
-                          getElementById("todo-text-input")
-                        )##value;
-            AddItem(title);
-          })
-        )>
-        <input _type="text" id="todo-text-input" />
-        <button _type="submit"> (str("Add an item")) </button>
-      </form>
+      <TodoForm appReduce=reduce />
       <h2> (str("Current Items")) </h2>
       <div>
         (
