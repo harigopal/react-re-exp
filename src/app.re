@@ -6,12 +6,16 @@ type todoItem = {
 
 let str = ReasonReact.stringToElement;
 
+type action =
+  | AddItem
+  | ToggleItem(int);
+
 module TodoItem = {
   let component = ReasonReact.statelessComponent("TodoItem");
-  let make = (~item, _children) => {
+  let make = (~item, ~appReduce, _children) => {
     ...component,
     render: _self =>
-      <div>
+      <div onClick=(appReduce(_event => ToggleItem(item.id)))>
         <input
           _type="checkbox"
           checked=(Js.Boolean.to_js_boolean(item.completed))
@@ -22,9 +26,6 @@ module TodoItem = {
 };
 
 type state = {items: list(todoItem)};
-
-type action =
-  | AddItem;
 
 let component = ReasonReact.reducerComponent("App");
 
@@ -43,6 +44,14 @@ let make = _children => {
   reducer: (action, {items}) =>
     switch action {
     | AddItem => ReasonReact.Update({items: [newItem(), ...items]})
+    | ToggleItem(id) =>
+      let items =
+        List.map(
+          item =>
+            item.id === id ? {...item, completed: ! item.completed} : item,
+          items
+        );
+      ReasonReact.Update({items: items});
     },
   render: ({state: {items}, reduce}) => {
     let lengthMessage = itemCount =>
@@ -66,7 +75,12 @@ let make = _children => {
           ReasonReact.arrayToElement(
             Array.of_list(
               List.map(
-                item => <TodoItem item key=(string_of_int(item.id)) />,
+                item =>
+                  <TodoItem
+                    item
+                    appReduce=reduce
+                    key=(string_of_int(item.id))
+                  />,
                 items
               )
             )
