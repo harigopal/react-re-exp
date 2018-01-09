@@ -6,8 +6,11 @@ type todoItem = {
 
 let str = ReasonReact.stringToElement;
 
+[@bs.val]
+external getElementById : string => Dom.element = "document.getElementById";
+
 type action =
-  | AddItem
+  | AddItem(string)
   | ToggleItem(int);
 
 module TodoItem = {
@@ -31,9 +34,9 @@ let component = ReasonReact.reducerComponent("App");
 
 let lastId = ref(0);
 
-let newItem = () => {
+let newItem = title => {
   lastId := lastId^ + 1;
-  {id: lastId^, title: "Do something!", completed: false};
+  {id: lastId^, title, completed: false};
 };
 
 let make = _children => {
@@ -43,7 +46,7 @@ let make = _children => {
   },
   reducer: (action, {items}) =>
     switch action {
-    | AddItem => ReasonReact.Update({items: [newItem(), ...items]})
+    | AddItem(title) => ReasonReact.Update({items: [newItem(title), ...items]})
     | ToggleItem(id) =>
       let items =
         List.map(
@@ -66,9 +69,19 @@ let make = _children => {
     <div>
       <p> (str("This is the App component.")) </p>
       <p> (str(lengthMessage(List.length(items)))) </p>
-      <button onClick=(reduce(_event => AddItem))>
-        (str("Add an item"))
-      </button>
+      <form
+        onSubmit=(
+          reduce(event => {
+            ReactEventRe.Synthetic.preventDefault(event);
+            let title = ReactDOMRe.domElementToObj(
+                          getElementById("todo-text-input")
+                        )##value;
+            AddItem(title);
+          })
+        )>
+        <input _type="text" id="todo-text-input" />
+        <button _type="submit"> (str("Add an item")) </button>
+      </form>
       <h2> (str("Current Items")) </h2>
       <div>
         (
