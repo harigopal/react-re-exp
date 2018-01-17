@@ -10,7 +10,7 @@ let make = _children => {
     items: [{id: 0, title: "Initial incomplete item.", completed: false}]
   },
   reducer,
-  render: ({state: {items}, reduce}) => {
+  render: ({state: {items}, send}) => {
     let lengthMessage = itemCount =>
       switch itemCount {
       | 0 => "There are no items in the list. Add some?"
@@ -23,7 +23,7 @@ let make = _children => {
     <div>
       <p> (str("This is the App component.")) </p>
       <p> (str(lengthMessage(List.length(items)))) </p>
-      <TodoForm appReduce=reduce />
+      <TodoForm appSend=send />
       <h2> (str("Current Items")) </h2>
       <div>
         (
@@ -31,11 +31,7 @@ let make = _children => {
             Array.of_list(
               List.map(
                 item =>
-                  <TodoItem
-                    item
-                    appReduce=reduce
-                    key=(string_of_int(item.id))
-                  />,
+                  <TodoItem item appSend=send key=(string_of_int(item.id)) />,
                 items
               )
             )

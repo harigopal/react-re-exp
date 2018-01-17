@@ -2,10 +2,10 @@ let str = ReasonReact.stringToElement;
 
 let component = ReasonReact.statelessComponent("TodoItem");
 
-let make = (~item: TodoApp.item, ~appReduce, _children) => {
+let make = (~item: TodoApp.item, ~appSend, _children) => {
   ...component,
   render: _self =>
-    <div onClick=(appReduce(_event => TodoApp.ToggleItem(item.id)))>
+    <div onClick=(_event => appSend(TodoApp.ToggleItem(item.id)))>
       <input
         _type="checkbox"
         checked=(Js.Boolean.to_js_boolean(item.completed))
