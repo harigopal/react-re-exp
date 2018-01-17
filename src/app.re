@@ -9,7 +9,7 @@ let make = _children => {
   initialState: () => {
     items: [{id: 0, title: "Initial incomplete item.", completed: false}]
   },
-  reducer: appReducer,
+  reducer,
   render: ({state: {items}, reduce}) => {
     let lengthMessage = itemCount =>
       switch itemCount {

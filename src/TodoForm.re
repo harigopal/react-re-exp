@@ -1,5 +1,3 @@
-open TodoApp;
-
 let str = ReasonReact.stringToElement;
 
 type state = {title: string};
@@ -21,7 +19,7 @@ let make = (~appReduce, _children) => {
       onSubmit=(
         event => {
           ReactEventRe.Synthetic.preventDefault(event);
-          (appReduce(() => AddItem(title)))();
+          (appReduce(() => TodoApp.AddItem(title)))();
           (reduce(() => ""))();
         }
       )>

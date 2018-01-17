@@ -1,12 +1,12 @@
-type appItem = {
+type item = {
   id: int,
   title: string,
   completed: bool
 };
 
-type appState = {items: list(appItem)};
+type state = {items: list(item)};
 
-type appAction =
+type action =
   | AddItem(string)
   | ToggleItem(int);
 
@@ -17,7 +17,7 @@ let newItem = title => {
   {id: lastId^, title, completed: false};
 };
 
-let appReducer = (action, {items}) =>
+let reducer = (action, {items}) =>
   switch action {
   | AddItem(title) => ReasonReact.Update({items: [newItem(title), ...items]})
   | ToggleItem(id) =>
